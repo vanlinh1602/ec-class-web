@@ -1,330 +1,160 @@
 'use client';
 
-import _ from 'lodash';
-import {
-  Book,
-  Calendar,
-  CircleDot,
-  DollarSign,
-  Eye,
-  GraduationCap,
-  Info,
-  Pencil,
-  Trash2,
-  Users,
-} from 'lucide-react';
-import moment from 'moment';
-import Link from 'next/link';
-import { useParams } from 'next/navigation';
-import { useEffect, useMemo, useState } from 'react';
-import { useShallow } from 'zustand/shallow';
+import { Calendar, Clock, GraduationCap, Users } from 'lucide-react';
+import { useEffect, useState } from 'react';
 
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Separator } from '@/components/ui/separator';
 import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table';
-import Waiting from '@/components/Waiting';
-import { useClassroomStore } from '@/features/classroom/hooks';
-import { CourseEditor, SyllabusEditor } from '@/features/courses/components';
-import { useCourseStore } from '@/features/courses/hooks';
-import { classStatuses, courseLevels, courseStatuses } from '@/lib/options';
-import { generateID } from '@/lib/utils';
-import { format } from '@/utils/number';
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card';
 
-export default function CourseInfo() {
-  const { id } = useParams<{ id: string }>();
+interface Instructor {
+  id: number;
+  name: string;
+  title: string;
+  avatar: string;
+}
 
-  const {
-    courses,
-    syllabus,
-    getCourse,
-    updateCourse,
-    getSyllabus,
-    updateSyllabus,
-    createSyllabus,
-    handling,
-  } = useCourseStore(
-    useShallow((state) => ({
-      handling: state.handling,
-      courses: state.courses,
-      getCourse: state.getCourse,
-      updateCourse: state.updateCourse,
-      getSyllabus: state.getSyllabus,
-      updateSyllabus: state.updateSyllabus,
-      createSyllabus: state.createSyllabus,
-      syllabus: state.syllabus,
-    }))
-  );
+interface CourseDetails {
+  id: number;
+  name: string;
+  description: string;
+  longDescription: string;
+  instructor: Instructor;
+  startDate: string;
+  duration: string;
+  schedule: string;
+  capacity: number;
+  enrolled: number;
+  level: string;
+  topics: string[];
+}
 
-  const { classes, getFilterClass } = useClassroomStore(
-    useShallow((state) => ({
-      classes: state.classes,
-      getFilterClass: state.getFilterClass,
-    }))
-  );
+export default function CourseDetailsPage() {
+  const [course, setCourse] = useState<CourseDetails | null>(null);
 
-  const course = useMemo(() => courses[id as string], [courses]);
-  const courseSyllabus = useMemo(() => {
-    // sort syllabus by week
-    const syllabusData = syllabus[id as string];
-    if (!syllabusData) return null;
-    return {
-      ...syllabusData,
-      styllabus: _.sortBy(syllabusData.styllabus, 'week'),
+  useEffect(() => {
+    // In a real application, you would fetch the course data from an API
+    // For this example, we'll use mock data
+    const mockCourse: CourseDetails = {
+      id: 1,
+      name: 'English 101',
+      description: 'Introductory English course',
+      longDescription:
+        'This comprehensive course is designed for beginners who want to build a strong foundation in English. Covering grammar, vocabulary, and basic conversation skills, English 101 will help you gain confidence in your ability to communicate in English.',
+      instructor: {
+        id: 1,
+        name: 'Dr. Jane Smith',
+        title: 'Senior English Instructor',
+        avatar: '/placeholder.svg?height=80&width=80',
+      },
+      startDate: '2023-09-01',
+      duration: '12 weeks',
+      schedule: 'Mon, Wed, Fri 10:00 AM - 12:00 PM',
+      capacity: 20,
+      enrolled: 15,
+      level: 'Beginner',
+      topics: [
+        'Basic Grammar',
+        'Vocabulary Building',
+        'Pronunciation',
+        'Simple Conversations',
+        'Reading Comprehension',
+      ],
     };
-  }, [syllabus]);
 
-  const classesData = useMemo(() => {
-    return Object.values(classes).filter((item) => item.course === id);
-  }, [classes]);
-
-  const [editSyllabus, setEditSyllabus] = useState<number>();
-
-  useEffect(() => {
-    if (!course) {
-      getCourse(id as string);
-    }
-    if (!courseSyllabus) {
-      getSyllabus(id as string);
-    }
-  }, [id, course, courseSyllabus]);
-
-  useEffect(() => {
-    if (id) {
-      getFilterClass({ course: id });
-    }
+    setCourse(mockCourse);
   }, []);
 
-  const handleSaveSyllabus = (data: any) => {
-    const currentSyllabus = courseSyllabus?.styllabus || [];
-    if (editSyllabus === -1) {
-      currentSyllabus.push({
-        ...data,
-        id: generateID(),
-      });
-    } else {
-      _.set(currentSyllabus, [editSyllabus!], {
-        ...currentSyllabus[editSyllabus!],
-        ...data,
-      });
-    }
-    if (courseSyllabus) {
-      updateSyllabus(courseSyllabus.course, {
-        styllabus: currentSyllabus,
-      });
-    } else {
-      createSyllabus({
-        course: id as string,
-        styllabus: currentSyllabus,
-      });
-    }
-    setEditSyllabus(undefined);
-  };
-
-  const [editCourseInfo, setEditCourseInfo] = useState(false);
+  if (!course) {
+    return (
+      <div>
+        <div>Loading...</div>
+      </div>
+    );
+  }
 
   return (
-    <div className="container mx-auto p-4 space-y-6">
-      {handling ? <Waiting /> : null}
-      {editCourseInfo ? (
-        <CourseEditor
-          course={course}
-          onSave={(data) => {
-            updateCourse(id, data);
-            setEditCourseInfo(false);
-          }}
-          onCancel={() => setEditCourseInfo(false)}
-        />
-      ) : null}
-      {editSyllabus !== undefined ? (
-        <SyllabusEditor
-          initialData={
-            editSyllabus !== -1
-              ? courseSyllabus?.styllabus[editSyllabus]
-              : undefined
-          }
-          onSave={handleSaveSyllabus}
-          onCancel={() => setEditSyllabus(undefined)}
-        />
-      ) : null}
-      <Card>
-        <CardHeader>
-          <div className="flex justify-between items-start">
-            <div>
-              <CardTitle className="text-3xl">{course?.name}</CardTitle>
+    <div>
+      <div className="mx-auto">
+        <Card>
+          <CardHeader>
+            <CardTitle>{course.name}</CardTitle>
+            <CardDescription>{course.description}</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-6">
+            <div className="flex flex-wrap gap-4">
+              <Badge variant="secondary" className="flex items-center gap-1">
+                <GraduationCap className="w-4 h-4" />
+                {course.level}
+              </Badge>
+              <Badge variant="secondary" className="flex items-center gap-1">
+                <Calendar className="w-4 h-4" />
+                Starts {course.startDate}
+              </Badge>
+              <Badge variant="secondary" className="flex items-center gap-1">
+                <Clock className="w-4 h-4" />
+                {course.duration}
+              </Badge>
+              <Badge variant="secondary" className="flex items-center gap-1">
+                <Users className="w-4 h-4" />
+                {course.enrolled}/{course.capacity} enrolled
+              </Badge>
             </div>
-            <Button
-              className="flex items-center"
-              onClick={() => setEditCourseInfo(true)}
-            >
-              <Pencil className="w-5 h-5" />
-              Edit
+            <div>
+              <h2 className="text-xl font-semibold mb-2">Course Description</h2>
+              <p>{course.longDescription}</p>
+            </div>
+            <div>
+              <h2 className="text-xl font-semibold mb-2">Schedule</h2>
+              <p>{course.schedule}</p>
+            </div>
+            <div>
+              <h2 className="text-xl font-semibold mb-2">Topics Covered</h2>
+              <ul className="list-disc list-inside">
+                {course.topics.map((topic, index) => (
+                  <li key={index}>{topic}</li>
+                ))}
+              </ul>
+            </div>
+            <div>
+              <h2 className="text-xl font-semibold mb-2">Instructor</h2>
+              <div className="flex items-center space-x-4">
+                <Avatar className="h-12 w-12">
+                  <AvatarImage
+                    src={course.instructor.avatar}
+                    alt={course.instructor.name}
+                  />
+                  <AvatarFallback>
+                    {course.instructor.name
+                      .split(' ')
+                      .map((n) => n[0])
+                      .join('')}
+                  </AvatarFallback>
+                </Avatar>
+                <div>
+                  <p className="font-semibold">{course.instructor.name}</p>
+                  <p className="text-sm text-muted-foreground">
+                    {course.instructor.title}
+                  </p>
+                </div>
+              </div>
+            </div>
+          </CardContent>
+          <CardFooter>
+            <Button className="w-full" size="lg">
+              Enroll in Course
             </Button>
-          </div>
-        </CardHeader>
-        <CardContent className="space-y-6">
-          <Separator />
-          <div>
-            <h3 className="font-semibold text-lg mb-2 flex items-center">
-              <Info className="h-5 w-5 mr-2" />
-              Infomation
-            </h3>
-            <div className="grid grid-cols-3">
-              <div className="flex items-center">
-                <span className="font-semibold">Status:</span>
-                <span className="ml-2">
-                  {courseStatuses[course?.status || '']}
-                </span>
-              </div>
-              <div className="flex items-center">
-                <span className="font-semibold">Level:</span>
-                <span className="ml-2">
-                  {courseLevels[course?.level || '']}
-                </span>
-              </div>
-              <div className="flex items-center">
-                <span className="font-semibold">Duration:</span>
-                <span className="ml-2">{course?.duration} week</span>
-              </div>
-            </div>
-            <div className="flex items-center">
-              <span className="font-semibold">Description:</span>
-              <span className="ml-2">{course?.description || 'N/A'}</span>
-            </div>
-          </div>
-
-          <Separator />
-
-          <div>
-            <div className="flex justify-between">
-              <h3 className="font-semibold text-lg mb-2 flex items-center ">
-                <Book className="h-5 w-5 mr-2" />
-                Course Syllabus
-              </h3>
-              <Button onClick={() => setEditSyllabus(-1)}>Add Syllabus</Button>
-            </div>
-            <div className="space-y-2 mt-2">
-              {courseSyllabus ? (
-                courseSyllabus.styllabus.map((item, index) => (
-                  <div className="flex justify-between">
-                    <div key={index} className="flex items-center ml-4">
-                      <CircleDot className="w-5 h-5 mr-2" />
-                      <span>
-                        Week {item.week}: {item.description}
-                      </span>
-                    </div>
-                    <div className="flex space-x-2">
-                      <Pencil
-                        className="w-5 h-5"
-                        onClick={() => setEditSyllabus(index)}
-                      />
-                      <Trash2
-                        className="w-5 h-5 text-destructive"
-                        onClick={() => {
-                          const newSyllabus = courseSyllabus.styllabus.filter(
-                            (v, i) => i !== index
-                          );
-                          updateSyllabus(id, {
-                            styllabus: newSyllabus,
-                          });
-                        }}
-                      />
-                    </div>
-                  </div>
-                ))
-              ) : (
-                <p>No syllabus available.</p>
-              )}
-            </div>
-          </div>
-
-          <Separator />
-
-          <div>
-            <h3 className="font-semibold text-lg mb-2 flex items-center">
-              <DollarSign className="h-5 w-5 mr-2" />
-              Pricing
-            </h3>
-            <p className="font-semibold">
-              Full Payment: ${format(course?.price)}
-            </p>
-          </div>
-
-          <Separator />
-
-          <div>
-            <h3 className="font-semibold text-lg mb-2 flex items-center">
-              <GraduationCap className="h-5 w-5 mr-2" />
-              Classes
-            </h3>
-            <div>
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Name</TableHead>
-                    <TableHead>Schedule</TableHead>
-                    <TableHead>Students</TableHead>
-                    <TableHead>Status</TableHead>
-                    <TableHead></TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {classesData.map((cls) => (
-                    <TableRow key={cls.id}>
-                      <TableCell className="font-medium">{cls.name}</TableCell>
-
-                      <TableCell>
-                        <div className="flex items-center">
-                          <Calendar className="mr-2 h-4 w-4 text-muted-foreground" />
-                          {moment(cls.schedule.start).format('DD/MM/YYYY')}
-                          {' - '}
-                          {moment(cls.schedule.end).format('DD/MM/YYYY')}
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        <div className="flex items-center">
-                          <Users className="mr-2 h-4 w-4 text-muted-foreground" />
-                          {cls.students?.length || 0}
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        <div
-                          className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${
-                            cls.status === 'active'
-                              ? 'bg-green-100 text-green-800'
-                              : 'bg-yellow-100 text-yellow-800'
-                          }`}
-                        >
-                          {classStatuses[cls.status]}
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        <Link
-                          href={{
-                            pathname: `/classrooms/${cls.id}`,
-                          }}
-                          className="mr-2"
-                        >
-                          <Button variant="secondary">
-                            <Eye className="w-5 h-5" />
-                          </Button>
-                        </Link>
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
+          </CardFooter>
+        </Card>
+      </div>
     </div>
   );
 }

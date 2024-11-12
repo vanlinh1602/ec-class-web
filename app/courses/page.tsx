@@ -1,192 +1,167 @@
 'use client';
 
-import {
-  Book,
-  Clock,
-  DollarSign,
-  MoreHorizontal,
-  Plus,
-  Search,
-} from 'lucide-react';
+import { BookOpen, Users } from 'lucide-react';
 import Link from 'next/link';
-import { useEffect, useState } from 'react';
-import { useShallow } from 'zustand/shallow';
+import { useState } from 'react';
 
-import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table';
-import Waiting from '@/components/Waiting';
-import { CourseEditor } from '@/features/courses/components';
-import { useCourseStore } from '@/features/courses/hooks';
-import { Courses } from '@/features/courses/types';
-import { courseLevels, courseStatuses } from '@/lib/options';
-import { format } from '@/utils/number';
+import { Label } from '@/components/ui/label';
 
-export default function CoursesSection() {
-  const {
-    courses,
-    getCourses,
-    createCourse,
-    updateCourse,
-    handing,
-    deleteCourse,
-  } = useCourseStore(
-    useShallow((state) => ({
-      handing: state.handling,
-      courses: state.courses,
-      getCourses: state.getCourses,
-      createCourse: state.createCourse,
-      updateCourse: state.updateCourse,
-      deleteCourse: state.deleteCourse,
-    }))
-  );
+export default function Courses() {
+  const [courses, setCourses] = useState([
+    {
+      id: 1,
+      name: 'English 101',
+      description: 'Introductory English course',
+      capacity: 20,
+      enrolled: 15,
+    },
+    {
+      id: 2,
+      name: 'Advanced Grammar',
+      description: 'In-depth study of English grammar',
+      capacity: 15,
+      enrolled: 12,
+    },
+    {
+      id: 3,
+      name: 'Business English',
+      description: 'English for professional settings',
+      capacity: 18,
+      enrolled: 8,
+    },
+    {
+      id: 4,
+      name: 'IELTS Preparation',
+      description: 'Prepare for the IELTS exam',
+      capacity: 25,
+      enrolled: 20,
+    },
+  ]);
 
-  useEffect(() => {
-    if (!Object.keys(courses).length) getCourses();
-  }, []);
+  const [selectedCourse, setSelectedCourse] = useState<any>(null);
+  const [studentName, setStudentName] = useState('');
+  const [studentEmail, setStudentEmail] = useState('');
 
-  const [searchTerm, setSearchTerm] = useState('');
-
-  const filteredCourses = Object.values(courses).filter(
-    (course) =>
-      course.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      course.level.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      course.status.toLowerCase().includes(searchTerm.toLowerCase())
-  );
-
-  const [editCourse, setEditCourse] = useState<Partial<Courses>>();
+  const registerForCourse = () => {
+    if (selectedCourse && studentName && studentEmail) {
+      setCourses(
+        courses.map((course) =>
+          course.id === selectedCourse.id
+            ? { ...course, enrolled: course.enrolled + 1 }
+            : course
+        )
+      );
+      setSelectedCourse(null);
+      setStudentName('');
+      setStudentEmail('');
+      // In a real application, you would send this data to your backend
+      console.log(
+        `Registered ${studentName} (${studentEmail}) for ${selectedCourse.name}`
+      );
+    }
+  };
 
   return (
-    <div className="container mx-auto px-4 py-8">
-      {handing ? <Waiting /> : null}
-      {editCourse ? (
-        <CourseEditor
-          course={editCourse}
-          onCancel={() => setEditCourse(undefined)}
-          onSave={(courseUpdate, id) => {
-            if (id) {
-              updateCourse(id, courseUpdate);
-            } else {
-              createCourse(courseUpdate);
-            }
-            setEditCourse(undefined);
-          }}
-        />
-      ) : null}
-      <Card>
-        <CardHeader className="flex flex-row items-center justify-between">
-          <CardTitle>Courses</CardTitle>
-          <Button onClick={() => setEditCourse({})}>
-            <Plus className="mr-2 h-4 w-4" />
-            Add Course
-          </Button>
-        </CardHeader>
-        <CardContent>
-          <div className="flex items-center mb-4">
-            <Search className="mr-2 h-4 w-4 text-muted-foreground" />
-            <Input
-              placeholder="Search courses..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="max-w-sm"
-            />
-          </div>
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Name</TableHead>
-                <TableHead>Level</TableHead>
-                <TableHead>Duration</TableHead>
-                <TableHead>Price</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead></TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {filteredCourses.map((course) => (
-                <TableRow key={course.id}>
-                  <TableCell className="font-medium">
-                    <div className="flex items-center">
-                      <Book className="mr-2 h-4 w-4 text-muted-foreground" />
-                      {course.name}
+    <div>
+      <h1 className="text-2xl font-bold mb-6">Available Courses</h1>
+      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+        {courses.map((course) => (
+          <Card key={course.id}>
+            <CardHeader>
+              <CardTitle>{course.name}</CardTitle>
+              <CardDescription>{course.description}</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="flex items-center space-x-4 text-sm text-muted-foreground">
+                <div className="flex items-center">
+                  <Users className="mr-1 h-4 w-4" />
+                  <span>
+                    {course.enrolled}/{course.capacity} students
+                  </span>
+                </div>
+                <div className="flex items-center">
+                  <BookOpen className="mr-1 h-4 w-4" />
+                  <span>{course.id * 4} lessons</span>
+                </div>
+              </div>
+            </CardContent>
+            <CardFooter className="flex justify-between">
+              <Dialog>
+                <DialogTrigger asChild>
+                  <Button
+                    onClick={() => setSelectedCourse(course)}
+                    disabled={course.enrolled >= course.capacity}
+                  >
+                    {course.enrolled >= course.capacity
+                      ? 'Course Full'
+                      : 'Register'}
+                  </Button>
+                </DialogTrigger>
+                <DialogContent className="sm:max-w-[425px]">
+                  <DialogHeader>
+                    <DialogTitle>
+                      Register for {selectedCourse?.name}
+                    </DialogTitle>
+                    <DialogDescription>
+                      Enter your details to register for this course.
+                    </DialogDescription>
+                  </DialogHeader>
+                  <div className="grid gap-4 py-4">
+                    <div className="grid grid-cols-4 items-center gap-4">
+                      <Label htmlFor="name" className="text-right">
+                        Name
+                      </Label>
+                      <Input
+                        id="name"
+                        value={studentName}
+                        onChange={(e) => setStudentName(e.target.value)}
+                        className="col-span-3"
+                      />
                     </div>
-                  </TableCell>
-                  <TableCell>{courseLevels[course.level]}</TableCell>
-                  <TableCell>
-                    <div className="flex items-center">
-                      <Clock className="mr-2 h-4 w-4 text-muted-foreground" />
-                      {course.duration} weeks
+                    <div className="grid grid-cols-4 items-center gap-4">
+                      <Label htmlFor="email" className="text-right">
+                        Email
+                      </Label>
+                      <Input
+                        id="email"
+                        type="email"
+                        value={studentEmail}
+                        onChange={(e) => setStudentEmail(e.target.value)}
+                        className="col-span-3"
+                      />
                     </div>
-                  </TableCell>
-                  <TableCell>
-                    <div className="flex items-center">
-                      <DollarSign className="mr-2 h-4 w-4 text-muted-foreground" />
-                      {format(course.price || 0)}
-                    </div>
-                  </TableCell>
-                  <TableCell>
-                    <Badge
-                      variant={
-                        course.status === 'active'
-                          ? 'default'
-                          : course.status === 'upcoming'
-                          ? 'secondary'
-                          : 'outline'
-                      }
-                    >
-                      {courseStatuses[course.status]}
-                    </Badge>
-                  </TableCell>
-                  <TableCell>
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <Button variant="ghost" className="h-8 w-8 p-0">
-                          <MoreHorizontal className="h-4 w-4" />
-                        </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end">
-                        <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                        <DropdownMenuItem>
-                          <Link href={`/courses/${course.id}`}>
-                            View course
-                          </Link>
-                        </DropdownMenuItem>
-                        <DropdownMenuItem onClick={() => setEditCourse(course)}>
-                          Edit course
-                        </DropdownMenuItem>
-                        <DropdownMenuSeparator />
-                        <DropdownMenuItem
-                          className="text-red-600"
-                          onClick={() => deleteCourse(course.id)}
-                        >
-                          Delete course
-                        </DropdownMenuItem>
-                      </DropdownMenuContent>
-                    </DropdownMenu>
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </CardContent>
-      </Card>
+                  </div>
+                  <DialogFooter>
+                    <Button onClick={registerForCourse}>Register</Button>
+                  </DialogFooter>
+                </DialogContent>
+              </Dialog>
+              <Link href="/courses/id">
+                <Button>View Details</Button>
+              </Link>
+            </CardFooter>
+          </Card>
+        ))}
+      </div>
     </div>
   );
 }
