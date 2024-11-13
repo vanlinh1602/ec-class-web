@@ -1,43 +1,99 @@
-import { BookOpen, CheckCircle, Users } from 'lucide-react';
+'use client';
 
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { BookOpen, Users } from 'lucide-react';
+import Link from 'next/link';
+import { useEffect } from 'react';
+import { useShallow } from 'zustand/shallow';
 
-export default function Dashboard() {
+import { Button } from '@/components/ui/button';
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from '@/components/ui/dialog';
+import Waiting from '@/components/Waiting';
+import { useCourseStore } from '@/features/courses/hooks';
+import { courseLevels } from '@/lib/options';
+
+export default function Courses() {
+  const { handling, courses, getCourses } = useCourseStore(
+    useShallow((state) => ({
+      handling: state.handling,
+      courses: state.courses,
+      getCourses: state.getCourses,
+    }))
+  );
+
+  useEffect(() => {
+    getCourses();
+  }, []);
+
   return (
     <div>
-      <h1 className="text-2xl font-bold mb-6">Dashboard</h1>
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Classes</CardTitle>
-            <Users className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">5</div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">
-              Active Assignments
-            </CardTitle>
-            <BookOpen className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">12</div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">
-              Completed Assignments
-            </CardTitle>
-            <CheckCircle className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">89</div>
-          </CardContent>
-        </Card>
+      {handling && <Waiting />}
+      <h1 className="text-2xl font-bold mb-6">Available Courses</h1>
+      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+        {Object.values(courses || {}).map((course) => (
+          <Card key={course.id}>
+            <CardHeader>
+              <CardTitle>{course.name}</CardTitle>
+              <CardDescription className="h-10 text-ellipsis">
+                {course.description}
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="flex items-center space-x-4 text-sm text-muted-foreground">
+                <div className="flex items-center">
+                  <Users className="mr-1 h-4 w-4" />
+                  <span>{course.duration} weeks</span>
+                </div>
+                <div className="flex items-center">
+                  <BookOpen className="mr-1 h-4 w-4" />
+                  <span>Level: {courseLevels[course.level]}</span>
+                </div>
+              </div>
+            </CardContent>
+            <CardFooter className="flex justify-between">
+              <Dialog>
+                <DialogTrigger asChild>
+                  <Button onClick={() => {}}>Register</Button>
+                </DialogTrigger>
+                <DialogContent className="sm:max-w-[425px]">
+                  <DialogHeader>
+                    <DialogTitle>Register for {course?.name}</DialogTitle>
+                    <DialogDescription>
+                      Confirm your registration
+                    </DialogDescription>
+                  </DialogHeader>
+                  <div className="grid gap-4 py-4">
+                    This actions will register you for the course. Please press
+                    "Confirm" to continue.
+                  </div>
+                  <DialogFooter>
+                    <Button variant="destructive" onClick={() => {}}>
+                      Confirm
+                    </Button>
+                  </DialogFooter>
+                </DialogContent>
+              </Dialog>
+              <Link href={`course/${course.id}`}>
+                <Button>View Details</Button>
+              </Link>
+            </CardFooter>
+          </Card>
+        ))}
       </div>
     </div>
   );
