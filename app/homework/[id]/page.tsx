@@ -61,8 +61,6 @@ export default function AssignmentDetail() {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     // In a real application, you would send the submission and files to your backend
-    console.log('Submission:', submission);
-    console.log('Files:', files);
     // Update assignment status
     if (assignment) {
       setAssignment({ ...assignment, status: 'Submitted' });
