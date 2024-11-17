@@ -14,7 +14,6 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { Input } from '@/components/ui/input';
 import { useUserStore } from '@/features/user/hooks';
 import { auth } from '@/lib/firebase';
 
@@ -133,11 +132,11 @@ export const MainLayout = ({ children }: Props) => {
               <Menu className="h-6 w-6" />
             </Button>
             <div className="flex items-center space-x-4">
-              <Input
+              {/* <Input
                 type="search"
                 placeholder="Search..."
                 className="w-full max-w-sm"
-              />
+              /> */}
               {/* <Button variant="ghost" size="icon">
                 <Bell className="h-5 w-5" />
               </Button> */}

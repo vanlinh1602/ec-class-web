@@ -30,10 +30,11 @@ import { useUserStore } from '@/features/user/hooks';
 import { User } from '@/features/user/types';
 
 export default function UserProfile() {
-  const { user, handling, updateInfo } = useUserStore(
+  const { user, role, handling, updateInfo } = useUserStore(
     useShallow((state) => ({
       handling: state.handling,
       user: state.user,
+      role: state.role,
       updateInfo: state.updateInfo,
     }))
   );
@@ -97,9 +98,7 @@ export default function UserProfile() {
               ) : (
                 <h2 className="text-2xl font-bold">{user?.name}</h2>
               )}
-              <p className="text-muted-foreground">
-                {_.upperFirst(user?.role)}
-              </p>
+              <p className="text-muted-foreground">{_.upperFirst(role)}</p>
             </div>
           </div>
 
@@ -123,7 +122,7 @@ export default function UserProfile() {
             </div>
             <div className="flex items-center space-x-4">
               <Briefcase className="h-5 w-5 text-muted-foreground" />
-              <span>{_.upperFirst(user?.role)}</span>
+              <span>{_.upperFirst(role)}</span>
             </div>
             <div className="flex items-center space-x-4">
               <Calendar className="h-5 w-5 text-muted-foreground" />

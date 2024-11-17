@@ -37,9 +37,10 @@ export default function Courses() {
     }))
   );
 
-  const { role } = useUserStore(
+  const { role, user } = useUserStore(
     useShallow((state) => ({
       role: state.role,
+      user: state.user,
     }))
   );
 
@@ -73,7 +74,7 @@ export default function Courses() {
               </div>
             </CardContent>
             <CardFooter className="flex justify-between">
-              {role === 'student' && (
+              {role === 'student' && !user?.courses?.includes(course.id) && (
                 <Dialog>
                   <DialogTrigger asChild>
                     <Button onClick={() => {}}>Register</Button>

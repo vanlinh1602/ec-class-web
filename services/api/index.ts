@@ -125,17 +125,19 @@ export default class Api {
   upload = async <T>(
     path: string,
     files: File[],
-    params?: CustomObject<string>
+    params?: CustomObject<any>
   ): Promise<{ kind: 'ok'; data: T | undefined } | ApiProblems> => {
-    const data = new FormData();
-    Object.entries(params ?? {}).forEach(([field, value]) => {
-      data.append(field, value);
-    });
-    files.forEach((file) => {
-      data.append('files', file);
-    });
-    const response: ApiResponse<any> = await this.api.post(path, data);
+    const formData = new FormData();
+    formData.append('file', files[0]);
+    if (params) {
+      Object.keys(params).forEach((key) => {
+        formData.append(key, params[key]);
+      });
+    }
 
+    const response: ApiResponse<any> = await this.api.post(path, formData, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    });
     if (response.ok) {
       return { kind: 'ok', data: response.data };
     }

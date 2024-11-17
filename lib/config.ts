@@ -1,3 +1,8 @@
+export const PATH_UPLOADS =
+  process.env.NEXT_PUBLIC_STAGE === 'development'
+    ? 'http://localhost:3100'
+    : 'https://be-english-courses.kuma.id.vn';
+
 export const COURSES_BACKEND =
   process.env.NEXT_PUBLIC_STAGE === 'development'
     ? 'http://localhost:3100/courses'

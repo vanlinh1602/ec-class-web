@@ -1,5 +1,8 @@
+import moment from 'moment';
 import Link from 'next/link';
-import { useState } from 'react';
+import { useParams } from 'next/navigation';
+import { useEffect, useMemo, useState } from 'react';
+import { useShallow } from 'zustand/shallow';
 
 import { Button } from '@/components/ui/button';
 import {
@@ -9,125 +12,88 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from '@/components/ui/dialog';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
+import Waiting from '@/components/Waiting';
+import { useUserStore } from '@/features/user/hooks';
 
-const Assignments = () => {
-  const [assignments, setAssignments] = useState([
-    {
-      id: 1,
-      title: 'Grammar Exercise',
-      dueDate: '2023-06-15',
-      status: 'Active',
-    },
-    { id: 2, title: 'Essay Writing', dueDate: '2023-06-20', status: 'Active' },
-  ]);
+import { useClassroomStore } from '../../hooks';
+import { Assignment } from '../../types';
+import { AssignmentEditor } from './Editor';
 
-  const [newAssignment, setNewAssignment] = useState({
-    title: '',
-    description: '',
-    dueDate: '',
-  });
+const AssignmentsPage = () => {
+  const { id } = useParams<{ id: string }>();
 
-  const addAssignment = () => {
-    if (newAssignment.title && newAssignment.dueDate) {
-      setAssignments([
-        ...assignments,
-        { id: assignments.length + 1, ...newAssignment, status: 'Active' },
-      ]);
-      setNewAssignment({ title: '', description: '', dueDate: '' });
+  const [newAssignment, setNewAssignment] = useState<{ value?: Assignment }>();
+
+  const { handling, assignments, getAssignments } = useClassroomStore(
+    useShallow((state) => ({
+      handling: state.handling,
+      assignments: state.assignments,
+      getAssignments: state.getAssignments,
+    }))
+  );
+
+  const { role } = useUserStore(
+    useShallow((state) => ({
+      role: state.role,
+    }))
+  );
+
+  const classAssignments = useMemo(
+    () => assignments?.[id] || [],
+    [assignments, id]
+  );
+
+  useEffect(() => {
+    if (!classAssignments.length) {
+      getAssignments(id);
     }
-  };
+  }, [id]);
 
   return (
     <div>
+      {handling ? <Waiting /> : null}
+      {newAssignment && (
+        <AssignmentEditor
+          assignment={newAssignment.value}
+          classId={id}
+          onCancel={() => setNewAssignment(undefined)}
+        />
+      )}
       <div className="flex justify-between items-center mb-6">
         <h2 className="text-xl font-semibold">Assignments</h2>
-        <Dialog>
-          <DialogTrigger asChild>
-            <Button>Create Assignment</Button>
-          </DialogTrigger>
-          <DialogContent className="sm:max-w-[425px]">
-            <DialogHeader>
-              <DialogTitle>Create New Assignment</DialogTitle>
-            </DialogHeader>
-            <div className="grid gap-4 py-4">
-              <div className="grid grid-cols-4 items-center gap-4">
-                <Label htmlFor="title" className="text-right">
-                  Title
-                </Label>
-                <Input
-                  id="title"
-                  value={newAssignment.title}
-                  onChange={(e) =>
-                    setNewAssignment({
-                      ...newAssignment,
-                      title: e.target.value,
-                    })
-                  }
-                  className="col-span-3"
-                />
-              </div>
-              <div className="grid grid-cols-4 items-center gap-4">
-                <Label htmlFor="description" className="text-right">
-                  Description
-                </Label>
-                <Textarea
-                  id="description"
-                  value={newAssignment.description}
-                  onChange={(e) =>
-                    setNewAssignment({
-                      ...newAssignment,
-                      description: e.target.value,
-                    })
-                  }
-                  className="col-span-3"
-                />
-              </div>
-              <div className="grid grid-cols-4 items-center gap-4">
-                <Label htmlFor="dueDate" className="text-right">
-                  Due Date
-                </Label>
-                <Input
-                  id="dueDate"
-                  type="date"
-                  value={newAssignment.dueDate}
-                  onChange={(e) =>
-                    setNewAssignment({
-                      ...newAssignment,
-                      dueDate: e.target.value,
-                    })
-                  }
-                  className="col-span-3"
-                />
-              </div>
-            </div>
-            <Button onClick={addAssignment}>Create Assignment</Button>
-          </DialogContent>
-        </Dialog>
+        {role === 'teacher' && (
+          <Button onClick={() => setNewAssignment({ value: undefined })}>
+            Create Assignment
+          </Button>
+        )}
       </div>
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-        {assignments.map((assignment) => (
+        {classAssignments?.map((assignment) => (
           <Card key={assignment.id}>
             <CardHeader>
               <CardTitle>{assignment.title}</CardTitle>
             </CardHeader>
             <CardContent>
-              <p>Due Date: {assignment.dueDate}</p>
-              <p>Status: {assignment.status}</p>
+              <p>Due Date: {moment(assignment.dueDate).format('DD/MM/YYYY')}</p>
             </CardContent>
-            <CardFooter>
-              <Link href={`/homework/${assignment.id}`}>
-                <Button>View Details</Button>
-              </Link>
+            <CardFooter className="flex justify-between">
+              {role === 'student' && (
+                <Link href={`/homework/${assignment.id}-${id}`}>
+                  <Button>View Detail</Button>
+                </Link>
+              )}
+              {role === 'teacher' && (
+                <>
+                  <Button
+                    onClick={() => setNewAssignment({ value: assignment })}
+                  >
+                    Edit
+                  </Button>
+                  <Link href={`/submission/${assignment.id}-${id}`}>
+                    <Button>View Result</Button>
+                  </Link>
+                </>
+              )}
             </CardFooter>
           </Card>
         ))}
@@ -136,4 +102,4 @@ const Assignments = () => {
   );
 };
 
-export default Assignments;
+export default AssignmentsPage;
