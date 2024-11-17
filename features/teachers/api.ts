@@ -6,7 +6,7 @@ import { Teacher } from './types';
 
 export const getTeachers = async (): Promise<Teacher[]> => {
   try {
-    const result = await teachersService.get<Teacher[]>('/get');
+    const result = await teachersService.get<Teacher[]>('');
     if (result.kind === 'ok') {
       return result.data;
     }
@@ -25,7 +25,7 @@ export const getFilterTeacher = async (
   filter: Partial<Teacher>
 ): Promise<Teacher[]> => {
   try {
-    const result = await teachersService.get<Teacher[]>('/get', filter);
+    const result = await teachersService.get<Teacher[]>('', filter);
     if (result.kind === 'ok') {
       return result.data;
     }
@@ -44,7 +44,7 @@ export const createTeacher = async (
   teacher: Partial<Teacher>
 ): Promise<Teacher | null> => {
   try {
-    const result = await teachersService.post<Teacher>('/create', { teacher });
+    const result = await teachersService.post<Teacher>('', { teacher });
     if (result.kind === 'ok') {
       return result.data;
     }
@@ -64,7 +64,7 @@ export const updateTeacher = async (
   teacher: Partial<Teacher>
 ): Promise<boolean> => {
   try {
-    const result = await teachersService.post<{ success: boolean }>('/update', {
+    const result = await teachersService.put<{ success: boolean }>('', {
       id,
       teacher,
     });
@@ -84,7 +84,7 @@ export const updateTeacher = async (
 
 export const deleteTeacher = async (id: string): Promise<boolean> => {
   try {
-    const result = await teachersService.post<{ success: boolean }>('/delete', {
+    const result = await teachersService.delete<{ success: boolean }>('', {
       id,
     });
     if (result.kind === 'ok') {

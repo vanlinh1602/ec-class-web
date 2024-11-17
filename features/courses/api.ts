@@ -6,7 +6,7 @@ import { Courses, CourseSyllabus } from './types';
 
 export const getCourses = async (): Promise<Courses[]> => {
   try {
-    const result = await coursesService.get<Courses[]>('/get');
+    const result = await coursesService.get<Courses[]>('');
     if (result.kind === 'ok') {
       return result.data;
     }
@@ -25,7 +25,7 @@ export const getFilteredCourses = async (
   filter: Partial<Courses>
 ): Promise<Courses[]> => {
   try {
-    const result = await coursesService.get<Courses[]>('/get', filter);
+    const result = await coursesService.get<Courses[]>('', filter);
     if (result.kind === 'ok') {
       return result.data;
     }
@@ -44,7 +44,7 @@ export const createCourse = async (
   course: Partial<Courses>
 ): Promise<Courses | null> => {
   try {
-    const result = await coursesService.post<Courses>('/create', { course });
+    const result = await coursesService.post<Courses>('', { course });
     if (result.kind === 'ok') {
       return result.data;
     }
@@ -64,7 +64,7 @@ export const updateCourse = async (
   course: Partial<Courses>
 ): Promise<boolean> => {
   try {
-    const result = await coursesService.post<{ success: boolean }>('/update', {
+    const result = await coursesService.put<{ success: boolean }>('', {
       id,
       course,
     });
@@ -84,7 +84,7 @@ export const updateCourse = async (
 
 export const deleteCourse = async (id: string): Promise<boolean> => {
   try {
-    const result = await coursesService.post<{ success: boolean }>('/delete', {
+    const result = await coursesService.delete<{ success: boolean }>('', {
       id,
     });
     if (result.kind === 'ok') {
@@ -107,7 +107,7 @@ export const createSyllabus = async (
 ): Promise<CourseSyllabus | null> => {
   try {
     const result = await coursesService.post<CourseSyllabus>(
-      '/syllabus/create',
+      '/syllabus',
       syllabus
     );
     if (result.kind === 'ok') {
@@ -128,7 +128,7 @@ export const getSyllabus = async (
   courseId: string
 ): Promise<CourseSyllabus | null> => {
   try {
-    const result = await coursesService.get<CourseSyllabus>('/syllabus/get', {
+    const result = await coursesService.get<CourseSyllabus>('/syllabus', {
       courseId,
     });
     if (result.kind === 'ok') {
@@ -145,13 +145,10 @@ export const updateSyllabus = async (
   syllabus: Partial<CourseSyllabus>
 ): Promise<boolean> => {
   try {
-    const result = await coursesService.post<{ success: boolean }>(
-      '/syllabus/update',
-      {
-        course: courseId,
-        syllabus,
-      }
-    );
+    const result = await coursesService.put<{ success: boolean }>('/syllabus', {
+      course: courseId,
+      syllabus,
+    });
     if (result.kind === 'ok') {
       return result.data.success;
     }

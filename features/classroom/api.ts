@@ -6,7 +6,7 @@ import { Classroom } from './types';
 
 export const getClassroomes = async (): Promise<Classroom[]> => {
   try {
-    const result = await classroomsService.get<Classroom[]>('/get');
+    const result = await classroomsService.get<Classroom[]>('');
     if (result.kind === 'ok') {
       return result.data;
     }
@@ -25,7 +25,7 @@ export const getFilterClassroom = async (
   filter: Partial<Classroom>
 ): Promise<Classroom[]> => {
   try {
-    const result = await classroomsService.get<Classroom[]>('/get', filter);
+    const result = await classroomsService.get<Classroom[]>('', filter);
     if (result.kind === 'ok') {
       return result.data;
     }
@@ -44,7 +44,7 @@ export const createClassroom = async (
   classroom: Partial<Classroom>
 ): Promise<Classroom | null> => {
   try {
-    const result = await classroomsService.post<Classroom>('/create', {
+    const result = await classroomsService.post<Classroom>('', {
       classroom,
     });
     if (result.kind === 'ok') {
@@ -66,13 +66,10 @@ export const updateClassroom = async (
   classroom: Partial<Classroom>
 ): Promise<boolean> => {
   try {
-    const result = await classroomsService.post<{ success: boolean }>(
-      '/update',
-      {
-        id,
-        classroom,
-      }
-    );
+    const result = await classroomsService.put<{ success: boolean }>('', {
+      id,
+      classroom,
+    });
     if (result.kind === 'ok') {
       return result.data.success;
     }
@@ -89,12 +86,9 @@ export const updateClassroom = async (
 
 export const deleteClassroom = async (id: string): Promise<boolean> => {
   try {
-    const result = await classroomsService.post<{ success: boolean }>(
-      '/delete',
-      {
-        id,
-      }
-    );
+    const result = await classroomsService.delete<{ success: boolean }>('', {
+      id,
+    });
     if (result.kind === 'ok') {
       return result.data.success;
     }

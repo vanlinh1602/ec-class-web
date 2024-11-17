@@ -84,6 +84,30 @@ export default class Api {
     return getApiProblem(response);
   };
 
+  put = async <T>(
+    path: string,
+    params?: any
+  ): Promise<{ kind: 'ok'; data: T } | ApiProblems> => {
+    const response: ApiResponse<any> = await this.api.put(path, params);
+
+    if (response.ok) {
+      return { kind: 'ok', data: response.data };
+    }
+    return getApiProblem(response);
+  };
+
+  delete = async <T>(
+    path: string,
+    params?: any
+  ): Promise<{ kind: 'ok'; data: T } | ApiProblems> => {
+    const response: ApiResponse<any> = await this.api.delete(path, params);
+
+    if (response.ok) {
+      return { kind: 'ok', data: response.data };
+    }
+    return getApiProblem(response);
+  };
+
   download = async (
     path: string,
     params?: any
@@ -114,53 +138,6 @@ export default class Api {
 
     if (response.ok) {
       return { kind: 'ok', data: response.data };
-    }
-    return getApiProblem(response);
-  };
-
-  callSignServer = async <T>(
-    path: string,
-    buffer: ArrayBuffer | string,
-    params?: CustomObject<any>,
-    responseType?:
-      | 'blob'
-      | 'arraybuffer'
-      | 'document'
-      | 'json'
-      | 'text'
-      | 'stream'
-  ): Promise<{ kind: 'ok'; data: T | undefined } | ApiProblems> => {
-    const data = new FormData();
-    Object.entries(params ?? {}).forEach(([field, value]) => {
-      data.append(field, value);
-    });
-    if (buffer) {
-      data.append('files', new Blob([buffer]));
-    }
-    const options = {
-      withCredentials: true,
-      responseType,
-    };
-    const response: ApiResponse<any> = await this.api.post(path, data, options);
-
-    if (response.ok) {
-      return { kind: 'ok', data: response.data };
-    }
-    return getApiProblem(response);
-  };
-
-  graphql = async <T>(
-    path: string,
-    def: string,
-    query: string,
-    variables?: any
-  ): Promise<{ kind: 'ok'; data: T } | ApiProblems> => {
-    const response: ApiResponse<any> = await this.api.post(path, {
-      query,
-      variables,
-    });
-    if (response.ok) {
-      return { kind: 'ok', data: response.data?.data?.[def] };
     }
     return getApiProblem(response);
   };

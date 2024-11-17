@@ -6,7 +6,7 @@ import { Student } from './types';
 
 export const getStudents = async (): Promise<Student[]> => {
   try {
-    const result = await studentsService.get<Student[]>('/get');
+    const result = await studentsService.get<Student[]>('');
     if (result.kind === 'ok') {
       return result.data;
     }
@@ -25,7 +25,7 @@ export const getFilterStudents = async (
   filter: Partial<Student>
 ): Promise<Student[]> => {
   try {
-    const result = await studentsService.get<Student[]>('/get', filter);
+    const result = await studentsService.get<Student[]>('', filter);
     if (result.kind === 'ok') {
       return result.data;
     }
@@ -44,7 +44,7 @@ export const createStudent = async (
   student: Partial<Student>
 ): Promise<Student | null> => {
   try {
-    const result = await studentsService.post<Student>('/create', { student });
+    const result = await studentsService.post<Student>('', { student });
     if (result.kind === 'ok') {
       return result.data;
     }
@@ -64,7 +64,7 @@ export const updateStudent = async (
   student: Partial<Student>
 ): Promise<boolean> => {
   try {
-    const result = await studentsService.post<{ success: boolean }>('/update', {
+    const result = await studentsService.put<{ success: boolean }>('', {
       id,
       student,
     });
@@ -84,7 +84,7 @@ export const updateStudent = async (
 
 export const deleteStudent = async (id: string): Promise<boolean> => {
   try {
-    const result = await studentsService.post<{ success: boolean }>('/delete', {
+    const result = await studentsService.delete<{ success: boolean }>('', {
       id,
     });
     if (result.kind === 'ok') {

@@ -45,8 +45,6 @@ export default function UserProfile() {
     updateInfo(editedData!);
   };
 
-  console.log('user', user);
-
   const handleInputChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
   ) => {
