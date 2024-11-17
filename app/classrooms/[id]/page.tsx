@@ -32,7 +32,7 @@ export default function ClassDetails() {
 
   return (
     <div className="bg-white rounded p-6 h-full">
-      <h1 className="text-2xl font-bold mb-6">English 101</h1>
+      <h1 className="text-2xl font-bold mb-6">{classroom?.name}</h1>
       <Tabs defaultValue="info" className="w-full">
         <TabsList>
           <TabsTrigger value="info">Infomation</TabsTrigger>
@@ -46,7 +46,7 @@ export default function ClassDetails() {
           <Assignments />
         </TabsContent>
         <TabsContent value="students">
-          <Students />
+          <Students classStudents={classroom?.students || []} />
         </TabsContent>
       </Tabs>
     </div>

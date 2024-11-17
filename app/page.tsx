@@ -25,6 +25,7 @@ import {
 } from '@/components/ui/dialog';
 import Waiting from '@/components/Waiting';
 import { useCourseStore } from '@/features/courses/hooks';
+import { useUserStore } from '@/features/user/hooks';
 import { courseLevels } from '@/lib/options';
 
 export default function Courses() {
@@ -33,6 +34,12 @@ export default function Courses() {
       handling: state.handling,
       courses: state.courses,
       getCourses: state.getCourses,
+    }))
+  );
+
+  const { role } = useUserStore(
+    useShallow((state) => ({
+      role: state.role,
     }))
   );
 
@@ -66,28 +73,30 @@ export default function Courses() {
               </div>
             </CardContent>
             <CardFooter className="flex justify-between">
-              <Dialog>
-                <DialogTrigger asChild>
-                  <Button onClick={() => {}}>Register</Button>
-                </DialogTrigger>
-                <DialogContent className="sm:max-w-[425px]">
-                  <DialogHeader>
-                    <DialogTitle>Register for {course?.name}</DialogTitle>
-                    <DialogDescription>
-                      Confirm your registration
-                    </DialogDescription>
-                  </DialogHeader>
-                  <div className="grid gap-4 py-4">
-                    This actions will register you for the course. Please press
-                    "Confirm" to continue.
-                  </div>
-                  <DialogFooter>
-                    <Button variant="destructive" onClick={() => {}}>
-                      Confirm
-                    </Button>
-                  </DialogFooter>
-                </DialogContent>
-              </Dialog>
+              {role === 'student' && (
+                <Dialog>
+                  <DialogTrigger asChild>
+                    <Button onClick={() => {}}>Register</Button>
+                  </DialogTrigger>
+                  <DialogContent className="sm:max-w-[425px]">
+                    <DialogHeader>
+                      <DialogTitle>Register for {course?.name}</DialogTitle>
+                      <DialogDescription>
+                        Confirm your registration
+                      </DialogDescription>
+                    </DialogHeader>
+                    <div className="grid gap-4 py-4">
+                      This actions will register you for the course. Please
+                      press "Confirm" to continue.
+                    </div>
+                    <DialogFooter>
+                      <Button variant="destructive" onClick={() => {}}>
+                        Confirm
+                      </Button>
+                    </DialogFooter>
+                  </DialogContent>
+                </Dialog>
+              )}
               <Link href={`course/${course.id}`}>
                 <Button>View Details</Button>
               </Link>

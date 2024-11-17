@@ -2,7 +2,7 @@
 
 import moment from 'moment';
 import Link from 'next/link';
-import { useEffect } from 'react';
+import { useEffect, useMemo } from 'react';
 import { useShallow } from 'zustand/shallow';
 
 import { Button } from '@/components/ui/button';
@@ -16,6 +16,7 @@ import {
 import Waiting from '@/components/Waiting';
 import { useClassroomStore } from '@/features/classroom/hooks';
 import { useCourseStore } from '@/features/courses/hooks';
+import { useUserStore } from '@/features/user/hooks';
 
 export default function Classrooms() {
   const { handling, classes, getClasses } = useClassroomStore(
@@ -32,10 +33,31 @@ export default function Classrooms() {
     }))
   );
 
+  const { role, user } = useUserStore(
+    useShallow((state) => ({
+      role: state.role,
+      user: state.user,
+    }))
+  );
+
   useEffect(() => {
     getClasses();
     getCourses();
   }, []);
+
+  const filteredClasses = useMemo(() => {
+    if (!user) return [];
+
+    if (role === 'teacher') {
+      return Object.values(classes || {}).filter((cls) =>
+        cls.teachers.includes(user.id)
+      );
+    }
+
+    return Object.values(classes || {}).filter((cls) =>
+      cls.students?.includes(user.id)
+    );
+  }, [classes, role]);
 
   return (
     <div>
@@ -44,7 +66,7 @@ export default function Classrooms() {
         <h1 className="text-2xl font-bold">Classrooms</h1>
       </div>
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-        {Object.values(classes || {}).map((cls) => (
+        {filteredClasses.map((cls) => (
           <Card key={cls.id}>
             <CardHeader>
               <CardTitle>{cls.name}</CardTitle>

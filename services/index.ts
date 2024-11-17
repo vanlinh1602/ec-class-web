@@ -3,6 +3,7 @@ import {
   COURSES_BACKEND,
   STUDENTS_BACKEND,
   TEACHERS_BACKEND,
+  USERS_BACKEND,
 } from '@/lib/config';
 
 import Api from './api';
@@ -24,5 +25,10 @@ export const studentsService = new Api({
 
 export const teachersService = new Api({
   baseURL: TEACHERS_BACKEND,
+  withCredentials: true,
+});
+
+export const usersService = new Api({
+  baseURL: USERS_BACKEND,
   withCredentials: true,
 });

@@ -1,18 +1,68 @@
 'use client';
-import { Bell, Home, Menu, Users } from 'lucide-react';
+import { onAuthStateChanged } from 'firebase/auth';
+import { Home, LogOut, Menu, Users } from 'lucide-react';
 import Link from 'next/link';
-import { useState } from 'react';
+import { usePathname, useRouter } from 'next/navigation';
+import { useEffect, useMemo, useState } from 'react';
+import { useShallow } from 'zustand/shallow';
 
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 import { Input } from '@/components/ui/input';
+import { useUserStore } from '@/features/user/hooks';
+import { auth } from '@/lib/firebase';
 
 type Props = {
   children: React.ReactNode;
 };
 
 export const MainLayout = ({ children }: Props) => {
+  const pathName = usePathname();
+  const [currentTab, setCurrentTab] = useState('/');
+  const router = useRouter();
   const [sidebarOpen, setSidebarOpen] = useState(false);
+
+  const { user, login, singOut } = useUserStore(
+    useShallow((state) => ({
+      user: state.user,
+      role: state.role,
+      login: state.login,
+      singOut: state.signOut,
+    }))
+  );
+
+  const activeTab = useMemo(() => {
+    const tab = pathName.split('/')[1];
+    return tab;
+  }, [pathName]);
+
+  useEffect(() => {
+    if (!user && activeTab !== 'login') {
+      router.push('/login');
+      setCurrentTab(pathName);
+    }
+    return onAuthStateChanged(auth, (userData) => {
+      if (userData) {
+        login();
+      }
+    });
+  }, [activeTab]);
+
+  useEffect(() => {
+    if (user && activeTab === 'login') {
+      router.push(currentTab);
+    }
+  }, [user]);
+
+  if (activeTab === 'login') {
+    return <>{children}</>;
+  }
 
   return (
     <div className="flex h-screen bg-gray-100">
@@ -38,7 +88,9 @@ export const MainLayout = ({ children }: Props) => {
             <li>
               <Link
                 href="/"
-                className="flex items-center p-2 rounded-lg hover:bg-gray-100"
+                className={`flex items-center p-2 rounded-lg hover:bg-gray-100 ${
+                  activeTab === '' ? 'text-primary' : ''
+                }`}
               >
                 <Home className="mr-2 h-5 w-5" />
                 Courses
@@ -47,7 +99,9 @@ export const MainLayout = ({ children }: Props) => {
             <li>
               <Link
                 href="/classrooms"
-                className="flex items-center p-2 rounded-lg hover:bg-gray-100"
+                className={`flex items-center p-2 rounded-lg hover:bg-gray-100 ${
+                  activeTab === 'classrooms' ? 'text-primary' : ''
+                }`}
               >
                 <Users className="mr-2 h-5 w-5" />
                 Classrooms
@@ -84,16 +138,46 @@ export const MainLayout = ({ children }: Props) => {
                 placeholder="Search..."
                 className="w-full max-w-sm"
               />
-              <Button variant="ghost" size="icon">
+              {/* <Button variant="ghost" size="icon">
                 <Bell className="h-5 w-5" />
-              </Button>
-              <Avatar>
-                <AvatarImage
-                  src="/placeholder.svg?height=32&width=32"
-                  alt="User"
-                />
-                <AvatarFallback>U</AvatarFallback>
-              </Avatar>
+              </Button> */}
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    className="relative h-8 w-8 rounded-full"
+                  >
+                    <Avatar className="h-8 w-8">
+                      <AvatarImage src={user?.avatar} alt="User" />
+                      <AvatarFallback>
+                        {user?.name
+                          .split(' ')
+                          .map((n) => n[0])
+                          .join('')}
+                      </AvatarFallback>
+                    </Avatar>
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent className="w-56" align="end" forceMount>
+                  <DropdownMenuItem onClick={() => router.push('/profile')}>
+                    <Users className="mr-2 h-4 w-4" />
+                    <span>Profile</span>
+                  </DropdownMenuItem>
+                  {/* <DropdownMenuItem>
+                  <Settings className="mr-2 h-4 w-4" />
+                  <span>Settings</span>
+                </DropdownMenuItem> */}
+                  <DropdownMenuItem
+                    onClick={async () => {
+                      await singOut();
+                      router.replace('/login');
+                    }}
+                  >
+                    <LogOut className="mr-2 h-4 w-4" />
+                    <span>Log out</span>
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
             </div>
           </div>
         </header>

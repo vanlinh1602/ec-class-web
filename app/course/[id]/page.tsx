@@ -23,11 +23,21 @@ import {
 } from '@/components/ui/card';
 import Waiting from '@/components/Waiting';
 import { useCourseStore } from '@/features/courses/hooks';
+import { useUserStore } from '@/features/user/hooks';
 import { courseLevels, courseStatuses } from '@/lib/options';
 import { format } from '@/utils/number';
 
 export default function CourseDetailsPage() {
   const { id } = useParams<{ id: string }>();
+
+  const { userhandling, role, user, updateInfo } = useUserStore(
+    useShallow((state) => ({
+      userhandling: state.handling,
+      role: state.role,
+      user: state.user,
+      updateInfo: state.updateInfo,
+    }))
+  );
 
   const { handling, courses, syllabus, getCourse, getCourseSyllabus } =
     useCourseStore(
@@ -54,7 +64,7 @@ export default function CourseDetailsPage() {
 
   return (
     <div>
-      {handling && <Waiting />}
+      {handling || userhandling ? <Waiting /> : null}
       <div className="mx-auto">
         <Card>
           <CardHeader>
@@ -115,11 +125,22 @@ export default function CourseDetailsPage() {
               </p>
             </div>
           </CardContent>
-          <CardFooter>
-            <Button className="w-full" size="lg">
-              Enroll in Course
-            </Button>
-          </CardFooter>
+
+          {role === 'student' && !user?.courses?.includes(id) && (
+            <CardFooter>
+              <Button
+                className="w-full"
+                size="lg"
+                onClick={() => {
+                  const courseUpdate = user?.courses ?? [];
+                  courseUpdate.push(id);
+                  updateInfo({ courses: courseUpdate, id: user?.id });
+                }}
+              >
+                Enroll in Course
+              </Button>
+            </CardFooter>
+          )}
         </Card>
       </div>
     </div>
