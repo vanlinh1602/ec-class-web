@@ -21,6 +21,15 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from '@/components/ui/dialog';
 import Waiting from '@/components/Waiting';
 import { useCourseStore } from '@/features/courses/hooks';
 import { useUserStore } from '@/features/user/hooks';
@@ -128,17 +137,38 @@ export default function CourseDetailsPage() {
 
           {role === 'student' && !user?.courses?.includes(id) && (
             <CardFooter>
-              <Button
-                className="w-full"
-                size="lg"
-                onClick={() => {
-                  const courseUpdate = user?.courses ?? [];
-                  courseUpdate.push(id);
-                  updateInfo({ courses: courseUpdate, id: user?.id });
-                }}
-              >
-                Enroll in Course
-              </Button>
+              <Dialog>
+                <DialogTrigger asChild>
+                  <Button
+                    className="w-full"
+                    size="lg"
+                    onClick={() => {
+                      const courseUpdate = user?.courses ?? [];
+                      courseUpdate.push(id);
+                      updateInfo({ courses: courseUpdate, id: user?.id });
+                    }}
+                  >
+                    Enroll in Course
+                  </Button>
+                </DialogTrigger>
+                <DialogContent className="sm:max-w-[425px]">
+                  <DialogHeader>
+                    <DialogTitle>Register for {course?.name}</DialogTitle>
+                    <DialogDescription>
+                      Confirm your registration
+                    </DialogDescription>
+                  </DialogHeader>
+                  <div className="grid gap-4 py-4">
+                    This actions will register you for the course. Please press
+                    "Confirm" to continue.
+                  </div>
+                  <DialogFooter>
+                    <Button variant="destructive" onClick={() => {}}>
+                      Confirm
+                    </Button>
+                  </DialogFooter>
+                </DialogContent>
+              </Dialog>
             </CardFooter>
           )}
         </Card>

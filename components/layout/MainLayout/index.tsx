@@ -92,6 +92,17 @@ export const MainLayout = ({ children }: Props) => {
                 }`}
               >
                 <Home className="mr-2 h-5 w-5" />
+                Dashboard
+              </Link>
+            </li>
+            <li>
+              <Link
+                href="/course"
+                className={`flex items-center p-2 rounded-lg hover:bg-gray-100 ${
+                  activeTab === 'course' ? 'text-primary' : ''
+                }`}
+              >
+                <Home className="mr-2 h-5 w-5" />
                 Courses
               </Link>
             </li>
