@@ -1,6 +1,6 @@
 'use client';
 import { onAuthStateChanged } from 'firebase/auth';
-import { Home, LogOut, Menu, Users } from 'lucide-react';
+import { Home, LogOut, Menu, MessageCircle, Users } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { useEffect, useMemo, useState } from 'react';
@@ -104,6 +104,17 @@ export const MainLayout = ({ children }: Props) => {
               >
                 <Users className="mr-2 h-5 w-5" />
                 Classrooms
+              </Link>
+            </li>
+            <li>
+              <Link
+                href="/chat"
+                className={`flex items-center p-2 rounded-lg hover:bg-gray-100 ${
+                  activeTab === 'chat' ? 'text-primary' : ''
+                }`}
+              >
+                <MessageCircle className="mr-2 h-5 w-5" />
+                Ai Chat
               </Link>
             </li>
             {/* <li>
