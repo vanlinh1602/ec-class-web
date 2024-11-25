@@ -106,7 +106,7 @@ export const deleteClassroom = async (id: string): Promise<boolean> => {
 // Assignment
 
 export const getFilterAssignment = async (filter: {
-  classroomId: string;
+  classId: string;
 }): Promise<Assignment[]> => {
   try {
     const result = await classroomsService.get<Assignment[]>(

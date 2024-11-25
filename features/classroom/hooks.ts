@@ -151,7 +151,7 @@ export const useClassroomStore = create<ClassroomState & ClassroomActions>()(
       set(() => ({ handling: true }), false, {
         type: 'classes/getAssignments',
       });
-      const assignments = await getFilterAssignment({ classroomId: classId });
+      const assignments = await getFilterAssignment({ classId: classId });
       set(
         (s) => ({
           assignments: {
