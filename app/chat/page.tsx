@@ -1,9 +1,10 @@
 'use client';
 
 import { Send } from 'lucide-react';
-import { useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import Markdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
+import { useShallow } from 'zustand/shallow';
 
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
@@ -17,12 +18,29 @@ import {
 } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import Waiting from '@/components/Waiting';
+import { useCourseStore } from '@/features/courses/hooks';
 
 import { createMessage, Message } from '../../lib/ai';
 
 export default function AIChat() {
   const [input, setInput] = useState('');
   const [messages, setMessages] = useState<Message[]>([]);
+  const { courses, handling, getCourses } = useCourseStore(
+    useShallow((state) => ({
+      handling: state.handling,
+      courses: state.courses,
+      getCourses: state.getCourses,
+    }))
+  );
+
+  useEffect(() => {
+    if (!Object.keys(courses).length) {
+      getCourses();
+    }
+  }, []);
+
+  const courseArr = useMemo(() => Object.values(courses || {}), [courses]);
 
   const handleSubmit = async () => {
     setMessages([
@@ -31,11 +49,12 @@ export default function AIChat() {
       { content: 'Typing...', role: 'system' },
     ]);
     setInput('');
-    createMessage(input, messages).then((result) => {
+    createMessage(input, messages, courseArr).then((result) => {
+      const { promt, ...mes } = result;
       const newMessages: Message[] = [
         ...messages,
-        { content: input, role: 'user' },
-        { content: result, role: 'system' },
+        { content: input, role: 'user', promt },
+        mes,
       ];
       setMessages(newMessages);
     });
@@ -43,6 +62,7 @@ export default function AIChat() {
 
   return (
     <div>
+      {handling ? <Waiting /> : null}
       <Card className="w-full max-w-2xl mx-auto">
         <CardHeader>
           <CardTitle>Chat with AI Assistant</CardTitle>
