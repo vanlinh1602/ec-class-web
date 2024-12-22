@@ -24,6 +24,7 @@
     "@radix-ui/react-tabs": "^1.1.1",
     "@radix-ui/react-toast": "^1.2.2",
     "apisauce": "^3.1.0",
+    "axios": "^1.7.9",
     "class-variance-authority": "^0.7.0",
     "clsx": "^2.1.1",
     "cmdk": "1.0.0",
@@ -44,7 +45,7 @@
     "remark-gfm": "^4.0.0",
     "tailwind-merge": "^2.5.3",
     "tailwindcss-animate": "^1.0.7",
-    "together-ai": "^0.9.0",
+    "together-ai": "^0.10.0",
     "zod": "^3.23.8",
     "zustand": "^5.0.0"
   },
